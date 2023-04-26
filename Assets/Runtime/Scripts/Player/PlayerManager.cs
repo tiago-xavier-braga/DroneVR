@@ -22,7 +22,6 @@ namespace DroneVR.Player
 
         private Vector3 forceJumpFrame, forceForwardFrame;
         private Vector3 rotateSideFrame, rotateVerticalFrame, rotateDirectionalFrame;
-        private float RPM = 0;
 
         private Rigidbody Rigidbodyrb;
 
@@ -35,33 +34,35 @@ namespace DroneVR.Player
 
         public void Update()
         {
-            if(RPM < force)
-            {
-                RPM++;
-            }
 
             leftAxisThumbstick = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick);
             rightAxisThumbstick = OVRInput.Get(OVRInput.Axis2D.SecondaryThumbstick);
 
-            forceJumpFrame = new Vector3(0, leftAxisThumbstick.y, 0) * RPM * Time.deltaTime/Rigidbodyrb.mass;
+            forceJumpFrame = new Vector3(0, leftAxisThumbstick.y, 0) * force * Time.deltaTime/Rigidbodyrb.mass;
 
             rotateSideFrame = new Vector3(rightAxisThumbstick.y, 0, 0) * sensitivityAxis * Time.deltaTime;
             rotateVerticalFrame = new Vector3(0, 0, rightAxisThumbstick.x) * sensitivityAxis * Time.deltaTime * -1;
             rotateDirectionalFrame = new Vector3(0, leftAxisThumbstick.x, 0) * sensitivityAxis * Time.deltaTime;
 
 
-            if (rotateSideFrame.x != 0)
+            if (this.transform.rotation.y > 10f)
             {
-                forceForwardFrame = transform.forward * (force / acceleration) * Time.deltaTime;
+                forceForwardFrame = transform.forward * rightAxisThumbstick.x * (force / acceleration) * Time.deltaTime;
             }
+            else
+            {
+                forceForwardFrame = -transform.forward * rightAxisThumbstick.x * (force / acceleration) * Time.deltaTime;
+
+            }
+
             if (rotateSideFrame.y != 0)
             {
-                forceForwardFrame = transform.right * (force / acceleration) * Time.deltaTime;
+                forceForwardFrame = transform.right * rightAxisThumbstick.y * (force / acceleration) * Time.deltaTime;
             }
 
             this.transform.eulerAngles += rotateSideFrame + rotateVerticalFrame + rotateDirectionalFrame;
             Rigidbodyrb.AddForce(forceJumpFrame, ForceMode.Impulse);
-            Rigidbodyrb.AddForceAtPosition(forceForwardFrame, this.transform.position, ForceMode.Impulse);
+            Rigidbodyrb.AddForce(forceForwardFrame, ForceMode.Impulse);
         }
     }
 }
